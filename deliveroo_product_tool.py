@@ -6,8 +6,11 @@ import io
 import requests
 from io import BytesIO
 
-# Load OpenAI API Key securely
+# Load API key securely from Streamlit secrets
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+if not openai.api_key:
+    raise ValueError("OpenAI API key is missing. Set it in Streamlit Secrets.")
 
 # Function to generate Deliveroo-optimized SEO title and description
 def generate_seo_content(product_name):
