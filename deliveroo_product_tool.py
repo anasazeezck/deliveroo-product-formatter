@@ -22,28 +22,36 @@ def generate_seo_content(product_name):
           Title: [Generated Title]
           Description: [Generated Description]
         """
+        
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=600
+            messages=[
+                {"role": "system", "content": "You are an expert in e-commerce product optimization."},
+                {"role": "user", "content": prompt}
+            ]
         )
+        
         response_text = response["choices"][0]["message"]["content"]
         
+        # Extract title and description correctly
+        title, description = "Error extracting response", "Error extracting response"
         if "Title:" in response_text and "Description:" in response_text:
             title = response_text.split("Title:")[1].split("Description:")[0].strip()[:120]
             description = response_text.split("Description:")[1].strip()[:500]
-        else:
-            return "Error: OpenAI response format changed.", "Error: OpenAI response format changed."
         
         return title, description
-
+    
     except Exception as e:
         return "Error: OpenAI API request failed.", str(e)
 
 # Function to process an image from a URL
 def process_product_image(image_url):
     try:
-        response = requests.get(image_url, stream=True)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(image_url, headers=headers, stream=True)
+        
         if response.status_code == 200:
             img = Image.open(BytesIO(response.content))
             
@@ -70,7 +78,7 @@ def process_product_image(image_url):
             
             return processed_img, None
         else:
-            return None, "Error: Unable to fetch the image from the provided URL."
+            return None, f"Error: Unable to fetch the image from the provided URL. Status Code: {response.status_code}"
     
     except Exception as e:
         return None, f"Error processing image: {str(e)}"
