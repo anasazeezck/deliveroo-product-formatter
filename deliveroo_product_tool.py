@@ -6,15 +6,15 @@ import io
 import requests
 from io import BytesIO
 
-# Load API key securely from Streamlit secrets
+# Load OpenAI API Key securely
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-if not openai.api_key:
-    raise ValueError("OpenAI API key is missing. Set it in Streamlit Secrets.")
 
 # Function to generate Deliveroo-optimized SEO title and description
 def generate_seo_content(product_name):
     try:
+        model_name = "gpt-4"  # Default model
+        fallback_model = "gpt-3.5-turbo"  # Fallback if GPT-4 is unavailable
+
         prompt = f"""
         Generate a Deliveroo-optimized product title (max 120 characters) and description (max 500 characters) for the product: {product_name}.
 
@@ -26,22 +26,31 @@ def generate_seo_content(product_name):
           Description: [Generated Description]
         """
         
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an expert in e-commerce product optimization."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
+        try:
+            response = openai.ChatCompletion.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": "You are an expert in e-commerce product optimization."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+        except openai.error.OpenAIError:
+            response = openai.ChatCompletion.create(
+                model=fallback_model,
+                messages=[
+                    {"role": "system", "content": "You are an expert in e-commerce product optimization."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
         response_text = response["choices"][0]["message"]["content"]
         
-        # Extract title and description correctly
-        title, description = "Error extracting response", "Error extracting response"
         if "Title:" in response_text and "Description:" in response_text:
             title = response_text.split("Title:")[1].split("Description:")[0].strip()[:120]
             description = response_text.split("Description:")[1].strip()[:500]
-        
+        else:
+            title, description = "Error: Could not extract title.", "Error: Could not extract description."
+
         return title, description
     
     except Exception as e:
