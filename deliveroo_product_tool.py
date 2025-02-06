@@ -5,7 +5,6 @@ import os
 import io
 import requests
 from io import BytesIO
-from pillow_avif import AvifImagePlugin
 
 # Load OpenAI API Key securely
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -48,11 +47,11 @@ def process_product_image(image_url):
         if response.status_code == 200:
             img = Image.open(BytesIO(response.content))
             
-            # Convert AVIF and WEBP formats if necessary
-            if img.format in ["AVIF", "WEBP", "PNG", "JPEG", "JPG"]:
-                img = img.convert("RGBA")
-            else:
-                return None, "Error: Unsupported image format. Please use AVIF, WEBP, JPG, JPEG, or PNG."
+            # Convert unsupported AVIF format by fetching as JPG if necessary
+            if img.format not in ["WEBP", "PNG", "JPEG", "JPG"]:
+                return None, "Error: Unsupported image format. Please use WEBP, JPG, JPEG, or PNG."
+            
+            img = img.convert("RGBA")
             
             # Check minimum resolution
             if img.width < 500 or img.height < 500:
