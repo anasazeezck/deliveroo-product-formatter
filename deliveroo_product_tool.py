@@ -12,8 +12,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Function to generate Deliveroo-optimized SEO title and description
 def generate_seo_content(product_name):
     try:
-        client = openai.OpenAI()  # Ensure correct usage with latest OpenAI version
-        
         prompt = f"""
         Generate a Deliveroo-optimized product title (max 120 characters) and description (max 500 characters) for the product: {product_name}.
 
@@ -25,7 +23,7 @@ def generate_seo_content(product_name):
           Description: [Generated Description]
         """
         
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert in e-commerce product optimization."},
@@ -33,7 +31,7 @@ def generate_seo_content(product_name):
             ]
         )
         
-        response_text = response.choices[0].message.content
+        response_text = response["choices"][0]["message"]["content"]
         
         # Extract title and description correctly
         title, description = "Error extracting response", "Error extracting response"
