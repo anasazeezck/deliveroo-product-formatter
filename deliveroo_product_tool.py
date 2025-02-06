@@ -6,9 +6,11 @@ import os
 from io import BytesIO
 import openai  # Keep this in case you want to switch back easily
 
-# Load API key securely from environment variable
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")  # Set this in your local/system environment
+# Fetch API key securely from Streamlit secrets
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
+if not DEEPSEEK_API_KEY:
+    st.error("Error: DeepSeek API Key is missing. Please set it in Streamlit Secrets.")
 # Function to generate Deliveroo-optimized SEO title and description using DeepSeek API
 def generate_seo_content(product_name):
     if not DEEPSEEK_API_KEY:
